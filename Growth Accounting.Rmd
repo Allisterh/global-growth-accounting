@@ -1,0 +1,181 @@
+```{r}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, magrittr)
+```
+
+# Fuentes del crecimiento económico: La productividad de los factores en el mundo
+
+## (a) Importing and cleaning databases
+
+Data from Penn World Table (v 10.0): <https://www.rug.nl/ggdc/productivity/pwt/?lang=en>
+
+```{r}
+library(openxlsx)
+
+# Download Penn World Table (v 10.0)
+data_raw <- 
+  read.xlsx("https://www.rug.nl/ggdc/docs/pwt100.xlsx", sheet = 3) %>% as_tibble() %>% 
+  select(country, year, y = rgdpna, l = emp, pop, k = rnna, labsh) %>% na.omit()
+```
+
+```{r}
+# Download ISO-3166 country codes from Github
+countries <- 
+  read_csv("https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.csv") %>% 
+  select(country = name, countrycode = `alpha-3`, region, sub_region = `sub-region`)
+```
+
+```{r}
+# Join dataframes
+data <- 
+  data_raw %>% 
+  left_join(countries) %>% 
+  select(country, countrycode, region, sub_region, everything())
+```
+
+```{r}
+# Which countries don't have enough data?
+remove <- 
+  data %>% 
+  filter(year %in% c(1979:2019)) %>% 
+  group_by(country) %>% 
+  count(country) %>% 
+  filter(n < 40) %>% 
+  select(country)
+
+# Remove 'em
+data %<>% 
+  filter(year %in% c(1979:2019)) %>% 
+  anti_join(remove) %>% 
+  filter(countrycode != "NA")
+
+# Save the dataset
+write_csv(data, "data.csv")
+```
+
+```{r}
+# Import clean dataset
+data <- read_csv("data.csv")
+```
+
+## (b) Exploratory data analysis
+
+```{r}
+library(scales)
+library(plotly)
+
+p1 <- data %>%
+  group_by(countrycode) %>%
+  ggplot(aes(year, y, color = countrycode)) +
+  geom_line() +
+  labs(title = "Producto Interno Bruto Real",
+       subtitle = "Millones de dólares a precios constantes del 2017",
+       color = "País:",
+       caption = "Penn World Table (v 10.0)") +
+  scale_y_continuous(labels = comma) +
+  guides(color = guide_legend(nrow = 1)) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    plot.title = element_text(
+      face = "bold",
+      hjust = .5,
+      margin = margin(10, 0, 5, 0)
+    ),
+    plot.subtitle = element_text(hjust = .5, margin = margin(0, 0, 15, 0)),
+    plot.caption = element_text(color = "gray50", size = 8),
+    legend.position = "bottom",
+    legend.title = element_text(size = 9),
+    panel.background = element_rect(fill = "gray95")
+  )
+
+ggplotly(p1)
+```
+
+## (c) Solow growth accounting by sub region
+
+```{r}
+# Group by regions
+subregions <-
+  data %>%
+  group_by(sub_region, year) %>%
+  summarise_at(vars(y:labsh), mean, na.rm = TRUE)
+
+# Solow decomposition
+solow_sub <-
+  subregions %>%
+  filter(sub_region == "Northern America") %>%
+  mutate(
+    # Logs of output, capital and labor
+    y = log(y),
+    k = log(k),
+    l = log(l),
+    # First differences (growth rates)
+    dy = (y - lag(y)) * 100,
+    dk = (k - lag(k)) * 100,
+    dl = (l - lag(l)) * 100,
+    # Share of capital in the economy
+    capsh = 1 - labsh,
+    # Contributions of factors in the output growth
+    k_cont = dk * capsh,
+    l_cont = dl * labsh,
+    tfp_cont = dy - k_cont - l_cont
+  ) %>%
+  na.omit()
+```
+
+```{r}
+solow_sub %>%
+  select(sub_region, year, k_cont, l_cont, tfp_cont) %>%
+  pivot_longer(-c(sub_region, year)) %>%
+  ggplot(aes(year, value, fill = name)) +
+  geom_col() +
+  # geom_line(aes(y = dy), color = "gray35", size = .8) +
+  labs(title = "Contabilidad del crecimiento",
+       subtitle = "Contribución de los factores productivos al crecimiento económico",
+       caption = "Datos: Penn World Table (v 10.0)") +
+  guides(color = guide_legend(nrow = 1)) +
+  scale_fill_discrete(name = "Contribución:",
+                      labels = c("Capital", "Trabajo", "PTF")) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    plot.title = element_text(
+      face = "bold",
+      hjust = .5,
+      margin = margin(10, 0, 5, 0)
+    ),
+    plot.subtitle = element_text(hjust = .5, margin = margin(0, 0, 15, 0)),
+    plot.caption = element_text(color = "gray50", size = 8),
+    legend.position = "bottom",
+    legend.title = element_text(size = 9),
+    panel.background = element_rect(fill = "gray95")
+  )
+```
+
+## (d) Solow growth accounting for Guatemala
+
+```{r}
+{r}
+# Solow decomposition
+solow <- 
+  data %>% 
+  filter(year >= 1950 & countrycode == "GTM") %>% 
+  mutate(
+    # Logs of output, capital and labor
+    y = log(y),
+    k = log(k),
+    l = log(l),
+    # First differences (growth rates)
+    dy = (y - lag(y)) * 100,
+    dk = (k - lag(k)) * 100,
+    dl = (l - lag(l)) * 100,
+    # Share of capital in the economy
+    capsh = 1 - labsh,
+    # Contributions of factors in the output growth
+    k_cont = dk * capsh,
+    l_cont = dl * labsh,
+    tfp_cont = dy - k_cont - l_cont
+    ) %>% 
+  na.omit()
+```
