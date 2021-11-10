@@ -1,2 +1,2 @@
-# Global GRowth Accounting
+# Global Growth Accounting
 Solow residual
