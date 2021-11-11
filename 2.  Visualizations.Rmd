@@ -125,6 +125,7 @@ ggsave(filename = here("Plots","Plot2.png"))
 solow_regions <- 
   regions %>% 
   group_by(region) %>% 
+  filter(year %in% c(1984:2019)) %>% 
   mutate(
     # Logs of output, capital and labor
     y = log(y),
