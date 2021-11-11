@@ -46,6 +46,11 @@ regions %>%
   )
 ```
 
+```{r}
+library(here)
+ggsave(filename = here("Plots","Plot1.png"))
+```
+
 ## (b) Average growth accounting by region
 
 ```{r}
