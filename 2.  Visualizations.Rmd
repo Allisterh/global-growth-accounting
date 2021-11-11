@@ -5,24 +5,24 @@ pacman::p_load(tidyverse, magrittr)
 
 # Fuentes del crecimiento económico: La productividad de los factores en el mundo
 
-```{r}
-data <- read_csv("data.csv")
-```
-
 ## (a) Per capita GDP growth rates by region
+
+```{r}
+regions <- read_csv("regions.csv")
+```
 
 ```{r}
 library(scales)
 
-data %>%
+regions %>%
   mutate(pcap = y/pop,
          pcap_growth = ((pcap - lag(pcap) ) / pcap) * 100) %>% 
   filter(year != 1979) %>%
-  ggplot(aes(year, pcap_growth, color = region)) +
+  ggplot(aes(year, pcap_growth, 
+             color = fct_reorder2(region, pcap_growth, desc(id)))) +
   geom_line(size = .5) +
   labs(title = "Crecimiento económico en el mundo",
        subtitle = "Tasas de crecimiento del ingreso per cápita",
-       color = "Región:",
        caption = "Penn World Table (v 10.0)") +
   scale_y_continuous(labels = comma, breaks = scales::pretty_breaks(n = 10)) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
@@ -41,7 +41,7 @@ data %>%
                                 size = 8, 
                                 margin = margin(15, 0, 0, 0)),
     legend.position = "bottom",
-    legend.title = element_text(size = 9),
+    legend.title = element_blank(),
     panel.background = element_rect(fill = "gray95")
   )
 ```
