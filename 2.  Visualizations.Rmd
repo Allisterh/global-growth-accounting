@@ -46,7 +46,7 @@ data %>%
   )
 ```
 
-## (c) Solow growth accounting by sub region
+## (b) Average growth accounting by region
 
 ```{r}
 # Solow decomposition
