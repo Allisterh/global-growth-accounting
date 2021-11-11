@@ -34,5 +34,23 @@ data %<>%
   anti_join(remove) %>% 
   filter(countrycode != "NA")
 
+## Group by regions
+regions <-
+  data %>%
+  group_by(region, year) %>%
+  summarise_at(vars(y:labsh), mean, na.rm = TRUE)
+
+## Filter Guatemala
+gtm <- 
+  data %>% 
+  filter(country == "Guatemala") %>% 
+  select(!region) %>% 
+  rename(region = country)
+
+## Join regions and Guatemala
+data <- 
+  regions %>% 
+  rbind(gtm)
+
 ## Save the dataset
 write_csv(data, "data.csv")
