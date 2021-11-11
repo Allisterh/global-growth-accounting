@@ -1,5 +1,5 @@
-library(tidyverse)
-library(openxlsx)
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, magrittr, openxlsx)
 
 # Importing and cleaning databases
 
