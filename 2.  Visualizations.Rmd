@@ -177,40 +177,11 @@ regions %>%
 ggsave(filename = here("Plots","Plot3.png"))
 ```
 
-## (e) Cluster analysis
+## (e) Growth accounting by country
 
 ```{r}
 countries <- read_csv("countries.csv")
 ```
-
-```{r}
-library(factoextra)
-
-scaled <- 
-  countries %>%
-  group_by(country) %>%
-  filter(year %in% c(1984:2019)) %>%
-  solow(y = y,
-        l = l,
-        k = k,
-        labsh = labsh) %>%
-  select(country, k_cont, l_cont, tfp_cont) %>%
-  summarise_if(is.numeric, mean) %>%
-  column_to_rownames("country") %>%
-  scale()
-
-set.seed(123)
-cluster <- kmeans(scaled, 3, nstart = 25)
-
-fviz_cluster(
-  cluster,
-  data = scaled,
-  palette = c("#00AFBB", "#2E9FDF", "#E7B800", "#FC4E07"),
-  main = "Partitioning Clustering Plot"
-)
-```
-
-## (f) Growth accounting by country
 
 ```{r}
 countries %>%
@@ -283,11 +254,10 @@ countries %<>%
   select(region = country, dy, k_cont, l_cont, tfp_cont) %>%
   summarise_if(is.numeric, mean)
 
-
 mapdata <- left_join(mapdata, countries, by = "region")
 
 mapdata %>% 
   ggplot(aes( x = long, y = lat, group = group)) +
   geom_polygon(aes(fill = k_cont), color = "black", size = .1) +
-  coord_cartesian(ylim = c(-50, 90)) 
+  coord_cartesian(ylim = c(-50, 90))
 ```
