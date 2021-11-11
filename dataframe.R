@@ -50,7 +50,8 @@ gtm <-
 ## Join regions and Guatemala
 data <- 
   regions %>% 
-  rbind(gtm)
+  rbind(gtm) %>% 
+  select(!countrycode, !sub_region)
 
 ## Save the dataset
 write_csv(data, "data.csv")
