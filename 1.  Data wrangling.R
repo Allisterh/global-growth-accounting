@@ -80,7 +80,7 @@ write_csv(regions, "regions.csv")
 
 guatemala <- 
   data_raw %>% 
-  filter(country == "Guatemala" & year %in% c(1954:2019)) %>% 
+  filter(country == "Guatemala" & year >= 1954) %>% 
   select(country, year:labsh)
 
 write_csv(guatemala, "guatemala.csv")
