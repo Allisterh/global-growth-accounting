@@ -1,2 +1,2 @@
 # Global Growth Accounting
-Solow residual
+![](Plots/Plot1.png)
