@@ -51,12 +51,16 @@ library(here)
 ggsave(filename = here("Plots","Plot1.png"))
 ```
 
-## (b) Average growth accounting by region
+## (b) Growth accounting for Guatemala
+
+```{r}
+gtm <- read_csv("guatemala.csv")
+```
 
 ```{r}
 # Solow decomposition
-solow <-
-  data %>%
+solow_gtm <-
+  gtm %>%
   mutate(
     # Logs of output, capital and labor
     y = log(y),
@@ -77,18 +81,21 @@ solow <-
 ```
 
 ```{r}
-solow_sub %>%
-  select(sub_region, year, k_cont, l_cont, tfp_cont) %>%
-  pivot_longer(-c(sub_region, year)) %>%
+solow_gtm %>%
+  select(country, year, k_cont, l_cont, tfp_cont) %>%
+  pivot_longer(-c(country, year)) %>%
   ggplot(aes(year, value, fill = name)) +
   geom_col() +
   # geom_line(aes(y = dy), color = "gray35", size = .8) +
-  labs(title = "Contabilidad del crecimiento",
-       subtitle = "Contribución de los factores productivos al crecimiento económico",
+  labs(title = "Contabilidad del crecimiento: Guatemala",
+       subtitle = "Contribución de los factores productivos (1955 — 2019)",
        caption = "Datos: Penn World Table (v 10.0)") +
   guides(color = guide_legend(nrow = 1)) +
   scale_fill_discrete(name = "Contribución:",
                       labels = c("Capital", "Trabajo", "PTF")) +
+  scale_y_continuous(labels = comma, breaks = scales::pretty_breaks(n = 10)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 15)) +
+  guides(color = guide_legend(nrow = 1)) +
   theme(
     axis.title.x = element_blank(),
     axis.title.y = element_blank(),
@@ -97,15 +104,22 @@ solow_sub %>%
       hjust = .5,
       margin = margin(10, 0, 5, 0)
     ),
-    plot.subtitle = element_text(hjust = .5, margin = margin(0, 0, 15, 0)),
-    plot.caption = element_text(color = "gray50", size = 8),
+    plot.subtitle = element_text(hjust = .5, 
+                                 margin = margin(0, 0, 15, 0)),
+    plot.caption = element_text(color = "gray50", 
+                                size = 8, 
+                                margin = margin(15, 0, 0, 0)),
     legend.position = "bottom",
-    legend.title = element_text(size = 9),
+    legend.title = element_blank(),
     panel.background = element_rect(fill = "gray95")
   )
 ```
 
-## (d) Solow growth accounting for Guatemala
+```{r}
+ggsave(filename = here("Plots","Plot2.png"))
+```
+
+## (c) Average growth accounting by region
 
 ```{r}
 {r}
