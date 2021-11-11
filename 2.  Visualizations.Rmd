@@ -200,7 +200,7 @@ countries %>%
   ggplot(aes(country, value, fill = name)) +
   geom_col() +
   labs(title = "Contabilidad del crecimiento",
-       subtitle = "Contribución de los factores productivos (1985 – 2019)",
+       subtitle = "Contribución de los factores productivos por país (1985 – 2019)",
        caption = "Datos: Penn World Table (v 10.0)") +
   guides(color = guide_legend(nrow = 1)) +
   scale_fill_discrete(name = "Contribución:",
@@ -227,6 +227,10 @@ countries %>%
     legend.title = element_blank(),
     panel.background = element_rect(fill = "gray95")
   )
+```
+
+```{r}
+ggsave(filename = here("Plots","Plot4.png"))
 ```
 
 ## (g) Worldmaps
@@ -259,5 +263,41 @@ mapdata <- left_join(mapdata, countries, by = "region")
 mapdata %>% 
   ggplot(aes( x = long, y = lat, group = group)) +
   geom_polygon(aes(fill = k_cont), color = "black", size = .1) +
-  coord_cartesian(ylim = c(-50, 90))
+  coord_cartesian(ylim = c(-50, 80)) +
+  guides(color = guide_legend(nrow = 1)) +
+  labs(title = "Contribución de la productividad del capital",
+       subtitle = "en el crecimiento económico de 1985 a 2019",
+       caption = "Datos: Penn World Table (v 10.0)") +
+  scale_fill_continuous(name = "Capital") +
+  scale_y_continuous() +
+  guides(color = guide_legend(nrow = 1)) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.text.y = element_blank(),
+    plot.title = element_text(
+      face = "bold",
+      hjust = .5,
+      margin = margin(10, 0, 5, 0)
+    ),
+    plot.subtitle = element_text(hjust = .5,
+                                 margin = margin(0, 0, 15, 0)),
+    plot.caption = element_text(
+      color = "gray50",
+      size = 8,
+      margin = margin(15, 0, 0, 0)
+    ),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.background = element_rect(fill = "gray95"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+```
+
+```{r}
+ggsave(filename = here("Plots","Plot5.png"))
 ```
