@@ -122,9 +122,9 @@ ggsave(filename = here("Plots","Plot2.png"))
 
 ```{r}
 # Solow decomposition
-solow <- 
+solow_regions <- 
   regions %>% 
-  filter(year >= 1984 & region == "África") %>% 
+  group_by(region) %>% 
   mutate(
     # Logs of output, capital and labor
     y = log(y),
@@ -141,23 +141,24 @@ solow <-
     l_cont = dl * labsh,
     tfp_cont = dy - k_cont - l_cont
     ) %>% 
-  na.omit()
+  na.omit() %>% 
+  select(region, k_cont, l_cont, tfp_cont) %>% 
+  summarise_if(is.numeric, mean)
 ```
 
 ```{r}
-solow %>%
-  select(region, year, k_cont, l_cont, tfp_cont) %>%
-  pivot_longer(-c(region, year)) %>%
-  ggplot(aes(year, value, fill = name)) +
+solow_regions %>%
+  select(region, k_cont, l_cont, tfp_cont) %>%
+  pivot_longer(-c(region)) %>%
+  ggplot(aes(region, value, fill = name)) +
   geom_col() +
-  labs(title = "Contabilidad del crecimiento",
-       subtitle = "Contribución de los factores productivos (1955 – 2019)",
+  labs(title = "Contabilidad del crecimiento a nivel mundial",
+       subtitle = "Contribución de los factores productivos (1985 – 2019)",
        caption = "Datos: Penn World Table (v 10.0)") +
   guides(color = guide_legend(nrow = 1)) +
   scale_fill_discrete(name = "Contribución:",
                       labels = c("Capital", "Trabajo", "PTF")) +
-  scale_y_continuous(labels = comma, breaks = scales::pretty_breaks(n = 10)) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 15)) +
+  scale_y_continuous(labels = comma, breaks = scales::pretty_breaks(n = 5)) +
   guides(color = guide_legend(nrow = 1)) +
   theme(
     axis.title.x = element_blank(),
@@ -176,4 +177,8 @@ solow %>%
     legend.title = element_blank(),
     panel.background = element_rect(fill = "gray95")
   )
+```
+
+```{r}
+ggsave(filename = here("Plots","Plot3.png"))
 ```
