@@ -37,6 +37,7 @@ data %<>%
 ## Group by regions
 regions <-
   data %>%
+  filter(country != "Guatemala") %>% 
   group_by(region, year) %>%
   summarise_at(vars(y:labsh), mean, na.rm = TRUE)
 
