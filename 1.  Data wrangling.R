@@ -84,3 +84,7 @@ guatemala <-
   select(country, year:labsh)
 
 write_csv(guatemala, "guatemala.csv")
+
+# Dataframe 3: Countries --------------------------------------------------
+
+write_csv(countries, "countries.csv")
