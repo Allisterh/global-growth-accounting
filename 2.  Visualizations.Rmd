@@ -51,10 +51,9 @@ library(here)
 ggsave(filename = here("Plots","Plot1.png"))
 ```
 
-## (b) Solow decomposition
+## (b) Solow decomposition function
 
 ```{r}
-# Solow decomposition function
 solow <- function(data, y, l, k, labsh) {
   data %>%
   mutate(
@@ -77,7 +76,7 @@ solow <- function(data, y, l, k, labsh) {
 }
 ```
 
-## (b) Growth accounting for Guatemala
+## (c) Growth accounting for Guatemala
 
 ```{r}
 gtm <- read_csv("guatemala.csv")
@@ -86,8 +85,11 @@ gtm <- read_csv("guatemala.csv")
 ```{r}
 library(scales)
 
-gtm %>% 
-  solow(y = y, l = l, k = k, labsh = labsh) %>%
+gtm %>%
+  solow(y = y,
+        l = l,
+        k = k,
+        labsh = labsh) %>%
   select(country, year, k_cont, l_cont, tfp_cont) %>%
   pivot_longer(-c(country, year)) %>%
   ggplot(aes(year, value, fill = name)) +
@@ -109,11 +111,13 @@ gtm %>%
       hjust = .5,
       margin = margin(10, 0, 5, 0)
     ),
-    plot.subtitle = element_text(hjust = .5, 
+    plot.subtitle = element_text(hjust = .5,
                                  margin = margin(0, 0, 15, 0)),
-    plot.caption = element_text(color = "gray50", 
-                                size = 8, 
-                                margin = margin(15, 0, 0, 0)),
+    plot.caption = element_text(
+      color = "gray50",
+      size = 8,
+      margin = margin(15, 0, 0, 0)
+    ),
     legend.position = "bottom",
     legend.title = element_blank(),
     panel.background = element_rect(fill = "gray95")
@@ -127,34 +131,15 @@ ggsave(filename = here("Plots","Plot2.png"))
 ## (c) Average growth accounting by region
 
 ```{r}
-# Solow decomposition
-solow_regions <- 
-  regions %>% 
-  group_by(region) %>% 
-  filter(year %in% c(1984:2019)) %>% 
-  mutate(
-    # Logs of output, capital and labor
-    y = log(y),
-    k = log(k),
-    l = log(l),
-    # First differences (growth rates)
-    dy = (y - lag(y)) * 100,
-    dk = (k - lag(k)) * 100,
-    dl = (l - lag(l)) * 100,
-    # Share of capital in the economy
-    capsh = 1 - labsh,
-    # Contributions of factors in the output growth
-    k_cont = dk * capsh,
-    l_cont = dl * labsh,
-    tfp_cont = dy - k_cont - l_cont
-    ) %>% 
-  na.omit() %>% 
-  select(region, k_cont, l_cont, tfp_cont) %>% 
-  summarise_if(is.numeric, mean)
-```
-
-```{r}
-solow_regions %>%
+regions %>%
+  group_by(region) %>%
+  filter(year %in% c(1984:2019)) %>%
+  solow(y = y,
+        l = l,
+        k = k,
+        labsh = labsh) %>%
+  select(region, k_cont, l_cont, tfp_cont) %>%
+  summarise_if(is.numeric, mean) %>%
   select(region, k_cont, l_cont, tfp_cont) %>%
   pivot_longer(-c(region)) %>%
   ggplot(aes(region, value, fill = name)) +
@@ -175,11 +160,13 @@ solow_regions %>%
       hjust = .5,
       margin = margin(10, 0, 5, 0)
     ),
-    plot.subtitle = element_text(hjust = .5, 
+    plot.subtitle = element_text(hjust = .5,
                                  margin = margin(0, 0, 15, 0)),
-    plot.caption = element_text(color = "gray50", 
-                                size = 8, 
-                                margin = margin(15, 0, 0, 0)),
+    plot.caption = element_text(
+      color = "gray50",
+      size = 8,
+      margin = margin(15, 0, 0, 0)
+    ),
     legend.position = "bottom",
     legend.title = element_blank(),
     panel.background = element_rect(fill = "gray95")
