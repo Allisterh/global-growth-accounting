@@ -57,7 +57,7 @@ regions <-
   rbind(gtm) %>% 
   select(!c(countrycode, subregion))
 
-## Translate regions names
+## Translate regions names and add id's
 regions %<>% 
   mutate(
     region = as.factor(region),
@@ -76,3 +76,11 @@ regions %<>%
 ## Save the dataset
 write_csv(regions, "regions.csv")
 
+# Dataframe 2: Guatemala --------------------------------------------------
+
+guatemala <- 
+  data_raw %>% 
+  filter(country == "Guatemala" & year %in% c(1954:2019)) %>% 
+  select(country, year:labsh)
+
+write_csv(guatemala, "guatemala.csv")
