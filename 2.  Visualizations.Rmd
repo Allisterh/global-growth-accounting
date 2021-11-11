@@ -257,3 +257,37 @@ countries %>%
     panel.background = element_rect(fill = "gray95")
   )
 ```
+
+## (g) Worldmaps
+
+Se necesita agregar a los países que faltan por llamarse de forma distinta en ambas bases de datos, además el mapa es interesante si y solo si denota en qué países contribuye en su mayoría al crecimiento el factor capital, el factor trabajo y la productividad total de los factores.
+
+Aquí está como arreglar los nombres de los países: <https://www.sharpsightlabs.com/blog/map-oil-production-country-r/>
+
+```{r}
+countries <- read_csv("countries.csv")
+```
+
+```{r}
+library(sf)
+
+mapdata <- map_data("world") %>% as_tibble()
+
+countries %<>%
+  group_by(country) %>%
+  filter(year %in% c(1984:2019)) %>%
+  solow(y = y,
+        l = l,
+        k = k,
+        labsh = labsh) %>%
+  select(region = country, dy, k_cont, l_cont, tfp_cont) %>%
+  summarise_if(is.numeric, mean)
+
+
+mapdata <- left_join(mapdata, countries, by = "region")
+
+mapdata %>% 
+  ggplot(aes( x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = k_cont), color = "black", size = .1) +
+  coord_cartesian(ylim = c(-50, 90)) 
+```
