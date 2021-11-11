@@ -69,7 +69,10 @@ regions %<>%
                              "Oceanía" = "Oceania",
                              "Guatemala" = "Guatemala")
     ) %>% 
+  mutate(id = cur_group_id()) %>% 
+  select(id, everything()) %>% 
   ungroup()
 
 ## Save the dataset
 write_csv(regions, "regions.csv")
+
