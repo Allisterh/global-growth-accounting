@@ -51,15 +51,11 @@ library(here)
 ggsave(filename = here("Plots","Plot1.png"))
 ```
 
-## (b) Growth accounting for Guatemala
-
-```{r}
-gtm <- read_csv("guatemala.csv")
-```
+## (b) Solow decomposition
 
 ```{r}
 # Solow decomposition function
-solow <- function(data, region, y, l, k, labsh) {
+solow <- function(data, y, l, k, labsh) {
   data %>%
   mutate(
     # Logs of output, capital and labor
@@ -79,17 +75,19 @@ solow <- function(data, region, y, l, k, labsh) {
   ) %>%
   na.omit()
 }
+```
 
-s_gtm <- solow(gtm, y = y, l = l, k = k, labsh = labsh)
+## (b) Growth accounting for Guatemala
+
+```{r}
+gtm <- read_csv("guatemala.csv")
 ```
 
 ```{r}
-# Solow decomposition
+library(scales)
 
-```
-
-```{r}
-solow_gtm %>%
+gtm %>% 
+  solow(y = y, l = l, k = k, labsh = labsh) %>%
   select(country, year, k_cont, l_cont, tfp_cont) %>%
   pivot_longer(-c(country, year)) %>%
   ggplot(aes(year, value, fill = name)) +
