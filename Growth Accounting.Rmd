@@ -19,12 +19,13 @@ data %>%
          pcap_growth = ((pcap - lag(pcap) ) / pcap) * 100) %>% 
   filter(year != 1979) %>%
   ggplot(aes(year, pcap_growth, color = region)) +
-  geom_line() +
-  labs(title = "Crecimiento del ingreso per cápita",
-       subtitle = "Precios constantes del 2017",
+  geom_line(size = .5) +
+  labs(title = "Crecimiento económico en el mundo",
+       subtitle = "Tasas de crecimiento del ingreso per cápita",
        color = "Región:",
        caption = "Penn World Table (v 10.0)") +
-  scale_y_continuous(labels = comma) +
+  scale_y_continuous(labels = comma, breaks = scales::pretty_breaks(n = 10)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   guides(color = guide_legend(nrow = 1)) +
   theme(
     axis.title.x = element_blank(),
@@ -34,8 +35,11 @@ data %>%
       hjust = .5,
       margin = margin(10, 0, 5, 0)
     ),
-    plot.subtitle = element_text(hjust = .5, margin = margin(0, 0, 15, 0)),
-    plot.caption = element_text(color = "gray50", size = 8, margin = margin(15, 0, 0, 0)),
+    plot.subtitle = element_text(hjust = .5, 
+                                 margin = margin(0, 0, 15, 0)),
+    plot.caption = element_text(color = "gray50", 
+                                size = 8, 
+                                margin = margin(15, 0, 0, 0)),
     legend.position = "bottom",
     legend.title = element_text(size = 9),
     panel.background = element_rect(fill = "gray95")
