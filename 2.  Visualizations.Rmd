@@ -210,7 +210,7 @@ fviz_cluster(
 )
 ```
 
-## (f) Worldmap
+## (f) Growth accounting by country
 
 ```{r}
 countries %>%
