@@ -58,26 +58,34 @@ gtm <- read_csv("guatemala.csv")
 ```
 
 ```{r}
-# Solow decomposition
-solow_gtm <-
-  gtm %>%
+# Solow decomposition function
+solow <- function(data, region, y, l, k, labsh) {
+  data %>%
   mutate(
     # Logs of output, capital and labor
-    y = log(y),
-    k = log(k),
-    l = log(l),
+    y = log({{y}}),
+    k = log({{k}}),
+    l = log({{l}}),
     # First differences (growth rates)
-    dy = (y - lag(y)) * 100,
-    dk = (k - lag(k)) * 100,
-    dl = (l - lag(l)) * 100,
+    dy = ({{y}} - lag({{y}})) * 100,
+    dk = ({{k}} - lag({{k}})) * 100,
+    dl = ({{l}} - lag({{l}})) * 100,
     # Share of capital in the economy
-    capsh = 1 - labsh,
+    capsh = 1 - {{labsh}},
     # Contributions of factors in the output growth
     k_cont = dk * capsh,
-    l_cont = dl * labsh,
+    l_cont = dl * {{labsh}},
     tfp_cont = dy - k_cont - l_cont
   ) %>%
   na.omit()
+}
+
+s_gtm <- solow(gtm, y = y, l = l, k = k, labsh = labsh)
+```
+
+```{r}
+# Solow decomposition
+
 ```
 
 ```{r}
@@ -182,4 +190,14 @@ solow_regions %>%
 
 ```{r}
 ggsave(filename = here("Plots","Plot3.png"))
+```
+
+## (d) Cluster analysis
+
+```{r}
+countries <- read_csv("countries.csv")
+```
+
+```{r}
+
 ```
