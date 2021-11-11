@@ -17,7 +17,7 @@ library(scales)
 regions %>%
   mutate(pcap = y/pop,
          pcap_growth = ((pcap - lag(pcap) ) / pcap) * 100) %>% 
-  filter(year != 1979) %>%
+  filter(year >= 1985) %>%
   ggplot(aes(year, pcap_growth, 
              color = fct_reorder2(region, pcap_growth, desc(id)))) +
   geom_line(size = .5) +
@@ -86,9 +86,8 @@ solow_gtm %>%
   pivot_longer(-c(country, year)) %>%
   ggplot(aes(year, value, fill = name)) +
   geom_col() +
-  # geom_line(aes(y = dy), color = "gray35", size = .8) +
   labs(title = "Contabilidad del crecimiento: Guatemala",
-       subtitle = "Contribución de los factores productivos (1955 — 2019)",
+       subtitle = "Contribución de los factores productivos (1955 – 2019)",
        caption = "Datos: Penn World Table (v 10.0)") +
   guides(color = guide_legend(nrow = 1)) +
   scale_fill_discrete(name = "Contribución:",
@@ -122,11 +121,10 @@ ggsave(filename = here("Plots","Plot2.png"))
 ## (c) Average growth accounting by region
 
 ```{r}
-{r}
 # Solow decomposition
 solow <- 
-  data %>% 
-  filter(year >= 1950 & countrycode == "GTM") %>% 
+  regions %>% 
+  filter(year >= 1984 & region == "África") %>% 
   mutate(
     # Logs of output, capital and labor
     y = log(y),
@@ -144,4 +142,38 @@ solow <-
     tfp_cont = dy - k_cont - l_cont
     ) %>% 
   na.omit()
+```
+
+```{r}
+solow %>%
+  select(region, year, k_cont, l_cont, tfp_cont) %>%
+  pivot_longer(-c(region, year)) %>%
+  ggplot(aes(year, value, fill = name)) +
+  geom_col() +
+  labs(title = "Contabilidad del crecimiento",
+       subtitle = "Contribución de los factores productivos (1955 – 2019)",
+       caption = "Datos: Penn World Table (v 10.0)") +
+  guides(color = guide_legend(nrow = 1)) +
+  scale_fill_discrete(name = "Contribución:",
+                      labels = c("Capital", "Trabajo", "PTF")) +
+  scale_y_continuous(labels = comma, breaks = scales::pretty_breaks(n = 10)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 15)) +
+  guides(color = guide_legend(nrow = 1)) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    plot.title = element_text(
+      face = "bold",
+      hjust = .5,
+      margin = margin(10, 0, 5, 0)
+    ),
+    plot.subtitle = element_text(hjust = .5, 
+                                 margin = margin(0, 0, 15, 0)),
+    plot.caption = element_text(color = "gray50", 
+                                size = 8, 
+                                margin = margin(15, 0, 0, 0)),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.background = element_rect(fill = "gray95")
+  )
 ```
