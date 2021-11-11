@@ -6,12 +6,12 @@ pacman::p_load(tidyverse, magrittr, openxlsx)
 ## Download Penn World Table (v 10.0)
 penn <- 
   read.xlsx("https://www.rug.nl/ggdc/docs/pwt100.xlsx", sheet = 3) %>% as_tibble() %>% 
-  select(country, year, y = rgdpna, l = emp, pop, k = rnna, labsh) %>% na.omit()
+  select(country, countrycode, year, y = rgdpna, l = emp, pop, k = rnna, labsh) %>% na.omit()
 
-## Download ISO country codes
+## Download ISO country codes and regions
 countrycodes <- 
   read_csv("https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.csv") %>% 
-  select(country = name, countrycode = `alpha-3`, region, subregion = `sub-region`)
+  select(countrycode = `alpha-3`, region, subregion = `sub-region`)
 
 ## Join dataframes
 data_raw <- 
