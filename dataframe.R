@@ -51,7 +51,7 @@ gtm <-
 data <- 
   regions %>% 
   rbind(gtm) %>% 
-  select(!countrycode, !sub_region)
+  select(!c(countrycode, sub_region))
 
 ## Save the dataset
 write_csv(data, "data.csv")
