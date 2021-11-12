@@ -1,14 +1,13 @@
 ```{r}
-if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, magrittr, scales, here, sf)
 ```
 
-# Fuentes del crecimiento económico: La productividad de los factores en el mundo
+# Global growth accounting
 
 ## (a) Per capita GDP growth rates by region
 
 ```{r}
-regions <- read_csv("regions.csv")
+regions <- read_csv("regions_growth.csv")
 ```
 
 ```{r}
@@ -79,7 +78,7 @@ solow <- function(data, y, l, k, labsh) {
 ## (c) Growth accounting for Guatemala
 
 ```{r}
-gtm <- read_csv("guatemala.csv")
+gtm <- read_csv("guatemala_growth.csv")
 ```
 
 ```{r}
@@ -92,7 +91,7 @@ gtm %>%
   pivot_longer(-c(country, year)) %>%
   ggplot(aes(year, value, fill = name)) +
   geom_col() +
-  labs(title = "Contabilidad del crecimiento: Guatemala",
+  labs(title = "Contabilidad del crecimiento para Guatemala",
        subtitle = "Contribución de los factores productivos (1955 – 2019)",
        caption = "Datos: Penn World Table (v 10.0)") +
   guides(color = guide_legend(nrow = 1)) +
@@ -178,7 +177,7 @@ ggsave(filename = here("Plots","Plot3.png"))
 ## (e) Growth accounting by country
 
 ```{r}
-countries <- read_csv("countries.csv")
+countries <- read_csv("countries_growth.csv")
 ```
 
 ```{r}
@@ -197,8 +196,8 @@ countries %>%
          country = fct_reorder(country, desc(dy))) %>%
   ggplot(aes(country, value, fill = name)) +
   geom_col() +
-  labs(title = "Contabilidad del crecimiento",
-       subtitle = "Contribución de los factores productivos por país (1985 – 2019)",
+  labs(title = "Contabilidad del crecimiento por país",
+       subtitle = "Contribución de los factores productivos (1985 – 2019)",
        caption = "Datos: Penn World Table (v 10.0)") +
   guides(color = guide_legend(nrow = 1)) +
   scale_fill_discrete(name = "Contribución:",
@@ -208,7 +207,7 @@ countries %>%
   theme(
     axis.title.x = element_blank(),
     axis.title.y = element_blank(),
-    axis.text.x = element_text(angle = 90, hjust = 1),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = .4),
     plot.title = element_text(
       face = "bold",
       hjust = .5,
@@ -228,15 +227,13 @@ countries %>%
 ```
 
 ```{r}
-ggsave(filename = here("Plots","Plot4.png"))
+ggsave(filename = here("Plots","Plot4.png"), width = 15, height = 8)
 ```
 
 ## (g) World map
 
-El mapa es interesante si y solo si denota en qué países contribuye en su mayoría al crecimiento el factor capital, el factor trabajo y la productividad total de los factores.
-
 ```{r}
-countries <- read_csv("countries.csv")
+countries <- read_csv("countries_growth.csv")
 ```
 
 ```{r}
@@ -306,7 +303,7 @@ mapdata %>%
   geom_polygon(aes(fill = fct), color = "white", size = .1) +
   coord_cartesian(ylim = c(-55, 85)) +
   guides(color = guide_legend(nrow = 1)) +
-  labs(title = "Factor productivo más relevante\nen el crecimiento económico",
+  labs(title = "Factor productivo más relevante en el crecimiento económico",
        subtitle = "desde 1985 a 2019",
        caption = "Datos: Penn World Table (v 10.0)") +
   scale_fill_manual(values = c("#F8766D", "#00BA38", "#619CFF", "gray50")) +
