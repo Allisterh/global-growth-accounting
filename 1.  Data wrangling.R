@@ -88,3 +88,81 @@ write_csv(guatemala, "guatemala.csv")
 # Dataframe 3: Countries --------------------------------------------------
 
 write_csv(countries, "countries.csv")
+
+# Dataframe 4: Global extreme poverty -------------------------------------
+
+## Our World in Data: https://ourworldindata.org/extreme-poverty
+poverty <- 
+  read_csv("worldbank_poverty.csv") %>%
+  rename(
+    country = Entity,
+    countrycode = Code,
+    year = Year,
+    pov = `$1.90 per day - share of population below poverty line`
+  )
+
+## Join dataframes
+poverty_raw <- 
+  poverty %>% 
+  left_join(countrycodes) %>% 
+  select(country, countrycode, region, subregion, everything())
+
+## Which countries don't have enough data for a 1984 to 2019 analysis?
+remove <- 
+  poverty_raw %>% 
+  filter(year %in% c(1984:2019)) %>% 
+  group_by(country) %>% 
+  count(country) %>% 
+  arrange(n) %>% 
+  filter(n < 35) %>% 
+  select(country)
+
+## Remove 'em
+countries <-
+  poverty_raw %>%
+  filter(year %in% c(1984:2019)) %>%
+  anti_join(remove) %>%
+  filter(countrycode != "NA")
+
+## Group by regions
+by_regions <-
+  countries %>%
+  filter(country != "Guatemala") %>% 
+  group_by(region, year) %>%
+  summarise_at(vars(pov), mean, na.rm = TRUE)
+
+## Filter Guatemala
+gtm <- 
+  countries %>% 
+  filter(country == "Guatemala") %>% 
+  select(!region) %>% 
+  rename(region = country)
+
+## Bind dataframes
+regions <- 
+  by_regions %>% 
+  rbind(gtm) %>% 
+  select(!c(countrycode, subregion))
+
+## Translate regions names and add id's
+regions %<>% 
+  mutate(
+    region = as.factor(region),
+    region = fct_recode(region,
+                        "África" = "Africa",
+                        "América" = "Americas",
+                        "Europa" = "Europe",
+                        "Asia" = "Asia",
+                        "Oceanía" = "Oceania",
+                        "Guatemala" = "Guatemala")
+  ) %>% 
+  mutate(id = cur_group_id()) %>% 
+  select(id, everything()) %>% 
+  ungroup()
+
+## Save the datasets
+write_csv(regions, "poverty.csv")
+
+gtm %>% 
+  select(-c(countrycode, subregion)) %>% 
+  write_csv("guatemala_pov.csv")
