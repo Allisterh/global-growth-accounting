@@ -1,0 +1,9 @@
+```{r}
+
+```
+
+# Relation between extreme poverty rate and capital, labor and technology contribution to economic growth
+
+```{r}
+
+```
