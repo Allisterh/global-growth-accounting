@@ -51,18 +51,28 @@ regions_solow <-
         labsh = labsh) %>%
   select(region, year, k_cont, l_cont, tfp_cont)
 
-# Poverty rate of change by region
-poverty_roc <- 
-  poverty %>% 
-  mutate(pov = ((pov - lag(pov)) / lag(pov) * 100)) %>% 
-  na.omit()
-
 # Join dataframes
 data <- 
   regions_solow %>% 
-  left_join(poverty_roc) %>% 
+  left_join(poverty) %>% 
   select(region:tfp_cont, pov) %>% 
   ungroup()
+```
+
+## (d) Exploratory data analysis
+
+```{r}
+library(plotly)
+
+lines <- function(data, x, y, color) {
+  p <- 
+    data %>%
+    ggplot(aes({{x}}, {{y}}, color = {{color}})) +
+    geom_line() 
+  ggplotly(p)
+}
+
+poverty %>% lines(year, pov, region)
 ```
 
 ## (d) Pooled OLS
@@ -75,7 +85,9 @@ library(stargazer)
 
 # Declare data frame as panel data
 panel  <-  panel_data(data, id = region, wave = year)
+```
 
+```{r}
 # Model 1: Pooled OLS
 pooled <- plm(pov ~ k_cont + l_cont + tfp_cont, 
              data = panel,
@@ -88,4 +100,8 @@ pooled %>% tidy()
 stargazer(pooled, type = "text")
 ```
 
-Por hacer: Generar pruebas estadísticas, supervisar países por región en ambas bases de datos y redactar metodología.
+```{r}
+
+```
+
+Por hacer: Generar pruebas estadísticas, supervisar países por región en ambas bases de datos, redactar metodología, generar una gráfica para pobreza.
