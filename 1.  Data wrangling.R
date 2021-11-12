@@ -3,37 +3,47 @@ pacman::p_load(tidyverse, magrittr, openxlsx)
 
 # Importing and cleaning databases ----------------------------------------
 
-## Download Penn World Table (v 10.0)
-penn <- 
+## Penn World Table (v 10.0)
+pennworld_raw <- 
   read.xlsx("https://www.rug.nl/ggdc/docs/pwt100.xlsx", sheet = 3) %>% as_tibble() %>% 
   select(country, countrycode, year, y = rgdpna, l = emp, pop, k = rnna, labsh) %>% na.omit()
 
-## Download ISO country codes and regions
+## ISO country codes and regions
 countrycodes <- 
   read_csv("https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.csv") %>% 
   select(countrycode = `alpha-3`, region, subregion = `sub-region`)
 
-## Join dataframes
-data_raw <- 
-  penn %>% 
+## Join data frames
+pennworld <- 
+  pennworld_raw %>% 
   left_join(countrycodes) %>% 
   select(country, countrycode, region, subregion, everything())
 
-# Dataframe 1: By region and Guatemala ------------------------------------
+## Our World in Data: https://ourworldindata.org/extreme-poverty
+poverty_raw <- 
+  read_csv("worldbank_poverty.csv") %>%
+  rename(
+    country = Entity,
+    countrycode = Code,
+    year = Year,
+    pov = `$1.90 per day - share of population below poverty line`
+  )
 
-## Which countries don't have enough data for a 1979 to 2019 analysis?
+# Data frame 1: Growth by contintent (+ Guatemala) -------------------------
+
+## Which countries don't have enough data for a 1984 to 2019 analysis?
 remove <- 
-  data_raw %>% 
-  filter(year %in% c(1979:2019)) %>% 
+  pennworld %>% 
+  filter(year %in% c(1984:2019)) %>% 
   group_by(country) %>% 
   count(country) %>% 
-  filter(n < 40) %>% 
+  filter(n < 35) %>% 
   select(country)
 
 ## Remove 'em
 countries <-
-  data_raw %>%
-  filter(year %in% c(1979:2019)) %>%
+  pennworld %>%
+  filter(year %in% c(1984:2019)) %>%
   anti_join(remove) %>%
   filter(countrycode != "NA")
 
@@ -51,7 +61,7 @@ gtm <-
   select(!region) %>% 
   rename(region = country)
 
-## Bind dataframes
+## Bind data frames
 regions <- 
   by_regions %>% 
   rbind(gtm) %>% 
@@ -73,43 +83,35 @@ regions %<>%
   select(id, everything()) %>% 
   ungroup()
 
-## Save the dataset
-write_csv(regions, "regions.csv")
+## Save dataset
+write_csv(regions, "regions_growth.csv")
 
-# Dataframe 2: Guatemala --------------------------------------------------
+# Data frame 2: Guatemala --------------------------------------------------
 
+## Filter Guatemala
 guatemala <- 
-  data_raw %>% 
+  pennworld %>% 
   filter(country == "Guatemala" & year >= 1954) %>% 
   select(country, year:labsh)
 
-write_csv(guatemala, "guatemala.csv")
+## Save dataset
+write_csv(guatemala, "guatemala_growth.csv")
 
-# Dataframe 3: Countries --------------------------------------------------
+# Data frame 3: Countries --------------------------------------------------
 
-write_csv(countries, "countries.csv")
+write_csv(countries, "countries_growth.csv")
 
-# Dataframe 4: Global extreme poverty -------------------------------------
+# Data frame 4: Global extreme poverty -------------------------------------
 
-## Our World in Data: https://ourworldindata.org/extreme-poverty
+## Join data frames
 poverty <- 
-  read_csv("worldbank_poverty.csv") %>%
-  rename(
-    country = Entity,
-    countrycode = Code,
-    year = Year,
-    pov = `$1.90 per day - share of population below poverty line`
-  )
-
-## Join dataframes
-poverty_raw <- 
-  poverty %>% 
+  poverty_raw %>% 
   left_join(countrycodes) %>% 
   select(country, countrycode, region, subregion, everything())
 
 ## Which countries don't have enough data for a 1984 to 2019 analysis?
 remove <- 
-  poverty_raw %>% 
+  poverty %>% 
   filter(year %in% c(1984:2019)) %>% 
   group_by(country) %>% 
   count(country) %>% 
@@ -119,7 +121,7 @@ remove <-
 
 ## Remove 'em
 countries <-
-  poverty_raw %>%
+  poverty %>%
   filter(year %in% c(1984:2019)) %>%
   anti_join(remove) %>%
   filter(countrycode != "NA")
@@ -138,7 +140,7 @@ gtm <-
   select(!region) %>% 
   rename(region = country)
 
-## Bind dataframes
+## Bind data frames
 regions <- 
   by_regions %>% 
   rbind(gtm) %>% 
@@ -160,5 +162,5 @@ regions %<>%
   select(id, everything()) %>% 
   ungroup()
 
-## Save the datasets
-write_csv(regions, "poverty.csv")
+## Save dataset
+write_csv(regions, "regions_poverty.csv")
