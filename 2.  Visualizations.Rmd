@@ -231,7 +231,7 @@ countries %>%
 ggsave(filename = here("Plots","Plot4.png"))
 ```
 
-## (g) Worldmap
+## (g) World map
 
 El mapa es interesante si y solo si denota en qué países contribuye en su mayoría al crecimiento el factor capital, el factor trabajo y la productividad total de los factores.
 
@@ -255,7 +255,7 @@ countries %<>%
   select(region = country, dy, k_cont, l_cont, tfp_cont) %>%
   summarise_if(is.numeric, mean)
 
-# If else for capital, labor and TFP
+# If else for capital, labour and TFP
 countries %<>%
   mutate(fct = if_else(
               (k_cont > l_cont & k_cont > tfp_cont), "Capital",
