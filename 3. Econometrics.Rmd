@@ -3,12 +3,16 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, magrittr)
 ```
 
-# Relation between extreme poverty rate and capital, labor and technology contributions to economic growth
+# Relation between extreme poverty rate and capital, labor and technology contributions to the economic growth by continents
+
+## (a) Importing data frames
 
 ```{r}
-poverty <- read_csv("poverty.csv")
-regions <- read_csv("regions.csv")
+poverty <- read_csv("https://raw.githubusercontent.com/gafnts/global-growth-accounting/main/regions_poverty.csv")
+growth <- read_csv("https://raw.githubusercontent.com/gafnts/global-growth-accounting/main/regions_growth.csv")
 ```
+
+## (b) Solow decomposition function
 
 ```{r}
 solow <- function(data, y, l, k, labsh) {
@@ -33,10 +37,12 @@ solow <- function(data, y, l, k, labsh) {
 }
 ```
 
+## (c) Transformations
+
 ```{r}
 # Solow decomposition by region
 regions_solow <- 
-  regions %>%
+  growth %>%
   group_by(region) %>%
   filter(year %in% c(1984:2019)) %>%
   solow(y = y,
@@ -46,51 +52,40 @@ regions_solow <-
   select(region, year, k_cont, l_cont, tfp_cont)
 
 # Poverty rate of change by region
-poverty_rateofchange <- 
+poverty_roc <- 
   poverty %>% 
   mutate(pov = ((pov - lag(pov)) / lag(pov) * 100)) %>% 
   na.omit()
 
 # Join dataframes
-join <- 
+data <- 
   regions_solow %>% 
-  left_join(poverty_rateofchange) %>% 
+  left_join(poverty_roc) %>% 
   select(region:tfp_cont, pov) %>% 
   ungroup()
 ```
+
+## (d) Pooled OLS
 
 ```{r}
 library(panelr)
 library(plm)
 library(broom)
-library(kableExtra)
 library(stargazer)
 
-# Declare it as panel data
-panel  <-  panel_data(join, id = region, wave = year)
+# Declare data frame as panel data
+panel  <-  panel_data(data, id = region, wave = year)
 
 # Model 1: Pooled OLS
 pooled <- plm(pov ~ k_cont + l_cont + tfp_cont, 
              data = panel,
              model = "pooling")
 
+# Tidy summary
 pooled %>% tidy()
 
+# Table
 stargazer(pooled, type = "text")
 ```
 
-```{r}
-# Model 2: Random effects
-random <- plm(pov ~ k_cont + l_cont + tfp_cont, 
-             data = panel,
-             model = "random")
-
-summary(random)
-
-# Model 3: Fixed effects
-fixed <- plm(pov ~ k_cont + l_cont + tfp_cont, 
-             data = panel,
-             model = "fd")
-
-summary(fixed)
-```
+Por hacer: Generar pruebas estadísticas, supervisar países por región en ambas bases de datos y redactar metodología.
