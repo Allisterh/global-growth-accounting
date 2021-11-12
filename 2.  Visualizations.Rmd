@@ -1,4 +1,5 @@
 ```{r}
+if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, magrittr, scales, here, sf)
 ```
 
@@ -7,7 +8,7 @@ pacman::p_load(tidyverse, magrittr, scales, here, sf)
 ## (a) Per capita GDP growth rates by region
 
 ```{r}
-regions <- read_csv("regions_growth.csv")
+regions <- read_csv("https://raw.githubusercontent.com/gafnts/global-growth-accounting/main/regions_growth.csv")
 ```
 
 ```{r}
@@ -78,7 +79,7 @@ solow <- function(data, y, l, k, labsh) {
 ## (c) Growth accounting for Guatemala
 
 ```{r}
-gtm <- read_csv("guatemala_growth.csv")
+gtm <- read_csv("https://raw.githubusercontent.com/gafnts/global-growth-accounting/main/guatemala_growth.csv")
 ```
 
 ```{r}
@@ -125,7 +126,7 @@ gtm %>%
 ggsave(filename = here("Plots","Plot2.png"))
 ```
 
-## (d) Average growth accounting by region
+## (d) Growth accounting by region
 
 ```{r}
 regions %>%
@@ -177,7 +178,7 @@ ggsave(filename = here("Plots","Plot3.png"))
 ## (e) Growth accounting by country
 
 ```{r}
-countries <- read_csv("countries_growth.csv")
+countries <- read_csv("https://raw.githubusercontent.com/gafnts/global-growth-accounting/main/countries_growth.csv")
 ```
 
 ```{r}
@@ -233,7 +234,7 @@ ggsave(filename = here("Plots","Plot4.png"), width = 15, height = 8)
 ## (g) World map
 
 ```{r}
-countries <- read_csv("countries_growth.csv")
+countries <- read_csv("https://raw.githubusercontent.com/gafnts/global-growth-accounting/main/countries_growth.csv")
 ```
 
 ```{r}
