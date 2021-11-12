@@ -78,10 +78,7 @@ poverty %>% lines(year, pov, region)
 ## (d) Pooled OLS
 
 ```{r}
-library(panelr)
-library(plm)
-library(broom)
-library(stargazer)
+pacman::p_load(panelr, plm, broom, stargazer)
 
 # Declare data frame as panel data
 panel  <-  panel_data(data, id = region, wave = year)
@@ -89,7 +86,6 @@ panel  <-  panel_data(data, id = region, wave = year)
 
 ```{r}
 library(GGally)
-
 ggpairs(panel)
 ```
 
@@ -104,6 +100,24 @@ pooled %>% summary()
 
 # Table
 stargazer(pooled, type = "text")
+```
+
+```{r}
+# Model 2: Fixed OLS
+fixed <- plm(pov ~ k_cont + l_cont + tfp_cont, 
+             data = panel,
+             model = "fd")
+
+# Model 3: Random OLS
+random <- plm(pov ~ k_cont + l_cont + tfp_cont, 
+             data = panel,
+             model = "random")
+
+# Summary
+stargazer(random, type = "text")
+
+# Fixed or random?
+phtest(fixed, random)
 ```
 
 Por hacer: Generar pruebas estadísticas, supervisar países por región en ambas bases de datos, redactar metodología, generar una gráfica para pobreza.
