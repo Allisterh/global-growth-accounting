@@ -162,7 +162,3 @@ regions %<>%
 
 ## Save the datasets
 write_csv(regions, "poverty.csv")
-
-gtm %>% 
-  select(-c(countrycode, subregion)) %>% 
-  write_csv("guatemala_pov.csv")
