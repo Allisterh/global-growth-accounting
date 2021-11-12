@@ -1,8 +1,14 @@
 ```{r}
-
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, magrittr)
 ```
 
-# Relation between extreme poverty rate and capital, labor and technology contribution to economic growth
+# Relation between extreme poverty rate and capital, labor and technology contributions to economic growth
+
+```{r}
+poverty <- read_csv("poverty.csv")
+guatemala_pov <- read_csv("guatemala_pov.csv")
+```
 
 ```{r}
 
