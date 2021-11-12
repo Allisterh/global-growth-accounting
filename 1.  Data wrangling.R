@@ -29,7 +29,7 @@ poverty_raw <-
     pov = `$1.90 per day - share of population below poverty line`
   )
 
-# Data frame 1: Growth by contintent (+ Guatemala) -------------------------
+# Data frame 1: Growth by continent (+ Guatemala) -------------------------
 
 ## Which countries don't have enough data for a 1984 to 2019 analysis?
 remove <- 
