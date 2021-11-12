@@ -254,6 +254,15 @@ countries %<>%
         labsh = labsh) %>%
   select(region = country, dy, k_cont, l_cont, tfp_cont) %>%
   summarise_if(is.numeric, mean)
+
+# If else for capital, labor and TFP
+countries %<>%
+  mutate(fct = if_else(
+              (k_cont > l_cont & k_cont > tfp_cont), "Capital",
+              if_else((l_cont > k_cont & l_cont > tfp_cont), "Trabajo", "PTF")),
+         fct = as.factor(fct),
+         fct = fct_relevel(fct, "Capital", "Trabajo", "PTF")
+  )
 ```
 
 ```{r}
@@ -286,18 +295,21 @@ countries %<>%
 
 # Join dataframes
 mapdata <- left_join(mapdata, countries, by = "region")
+
+# Change NA's from fct column 
+mapdata %<>% mutate(fct = fct_explicit_na(fct, na_level = "Sin datos"))
 ```
 
 ```{r}
-mapdata %>% 
-  ggplot(aes( x = long, y = lat, group = group)) +
-  geom_polygon(aes(fill = k_cont), color = "black", size = .1) +
-  coord_cartesian(ylim = c(-50, 80)) +
+mapdata %>%
+  ggplot(aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = fct), color = "white", size = .1) +
+  coord_cartesian(ylim = c(-55, 85)) +
   guides(color = guide_legend(nrow = 1)) +
-  labs(title = "Contribución de la productividad del capital",
-       subtitle = "en el crecimiento económico de 1985 a 2019",
+  labs(title = "Factor productivo más relevante\nen el crecimiento económico",
+       subtitle = "desde 1985 a 2019",
        caption = "Datos: Penn World Table (v 10.0)") +
-  scale_fill_continuous(name = "Capital") +
+  scale_fill_manual(values = c("#F8766D", "#00BA38", "#619CFF", "gray50")) +
   scale_y_continuous() +
   guides(color = guide_legend(nrow = 1)) +
   theme(
