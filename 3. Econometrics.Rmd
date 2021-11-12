@@ -88,20 +88,29 @@ panel  <-  panel_data(data, id = region, wave = year)
 ```
 
 ```{r}
+library(GGally)
+
+ggpairs(panel)
+```
+
+```{r}
 # Model 1: Pooled OLS
 pooled <- plm(pov ~ k_cont + l_cont + tfp_cont, 
              data = panel,
              model = "pooling")
 
 # Tidy summary
-pooled %>% tidy()
+pooled %>% summary()
 
 # Table
 stargazer(pooled, type = "text")
 ```
 
-```{r}
-
-```
-
 Por hacer: Generar pruebas estadísticas, supervisar países por región en ambas bases de datos, redactar metodología, generar una gráfica para pobreza.
+
+```{r}
+data %>% 
+  filter(region == "Europa") %>% 
+  lm(pov ~ k_cont + l_cont + tfp_cont, data = .) %>% 
+  summary()
+```
