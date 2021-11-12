@@ -55,17 +55,42 @@ poverty_rateofchange <-
 join <- 
   regions_solow %>% 
   left_join(poverty_rateofchange) %>% 
-  select(id, region:tfp_cont, pov) %>% 
+  select(region:tfp_cont, pov) %>% 
   ungroup()
-```
-
-```{r}
-
 ```
 
 ```{r}
 library(panelr)
 library(plm)
+library(broom)
+library(kableExtra)
+library(stargazer)
 
-poverty %>% panelr::
+# Declare it as panel data
+panel  <-  panel_data(join, id = region, wave = year)
+
+# Model 1: Pooled OLS
+pooled <- plm(pov ~ k_cont + l_cont + tfp_cont, 
+             data = panel,
+             model = "pooling")
+
+pooled %>% tidy()
+
+stargazer(pooled, type = "text")
+```
+
+```{r}
+# Model 2: Random effects
+random <- plm(pov ~ k_cont + l_cont + tfp_cont, 
+             data = panel,
+             model = "random")
+
+summary(random)
+
+# Model 3: Fixed effects
+fixed <- plm(pov ~ k_cont + l_cont + tfp_cont, 
+             data = panel,
+             model = "fd")
+
+summary(fixed)
 ```
