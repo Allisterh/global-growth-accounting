@@ -3,10 +3,6 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, magrittr)
 ```
 
-```{r}
-rm(list = ls())
-```
-
 # Relation between extreme poverty rate and capital, labor and technology contributions to the economic growth by continents
 
 ## (a) Importing data frames
