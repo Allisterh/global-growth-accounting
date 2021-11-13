@@ -8,7 +8,7 @@ pacman::p_load(tidyverse, magrittr, scales, here, sf)
 ## (a) Per capita GDP growth rates by region
 
 ```{r}
-regions <- read_csv("https://raw.githubusercontent.com/gafnts/global-growth-accounting/main/regions_growth.csv")
+regions <- read_csv("regions_growth.csv")
 ```
 
 ```{r}
@@ -23,7 +23,7 @@ regions %>%
   geom_line(size = .5) +
   labs(title = "Crecimiento económico en el mundo",
        subtitle = "Tasas de crecimiento del ingreso per cápita",
-       caption = "Penn World Table (v 10.0)") +
+       caption = "Datos: Penn World Table (v 10.0)") +
   scale_y_continuous(labels = comma, breaks = scales::pretty_breaks(n = 10)) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   guides(color = guide_legend(nrow = 1)) +
@@ -231,7 +231,7 @@ countries %>%
 ggsave(filename = here("Plots","Plot4.png"), width = 15, height = 8)
 ```
 
-## (g) World map
+## (f) World map
 
 ```{r}
 countries <- read_csv("https://raw.githubusercontent.com/gafnts/global-growth-accounting/main/countries_growth.csv")
@@ -339,4 +339,45 @@ mapdata %>%
 
 ```{r}
 ggsave(filename = here("Plots","Plot5.png"))
+```
+
+## (g) Extreme poverty
+
+```{r}
+poverty <- read_csv("regions_poverty.csv")
+```
+
+```{r}
+poverty %>% 
+  filter(year >= 1985) %>%
+  ggplot(aes(year, pov, 
+             color = fct_reorder2(region, pov, desc(id)))) +
+  geom_line(size = .5) +
+  labs(title = "Porcentaje de la población viviendo en extrema pobreza",
+       subtitle = "(1.90 dólares por día) desde 1985 a 2019",
+       caption = "Datos: Banco Mundial") +
+  scale_y_continuous(labels = comma, breaks = scales::pretty_breaks(n = 10)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  guides(color = guide_legend(nrow = 1)) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    plot.title = element_text(
+      face = "bold",
+      hjust = .5,
+      margin = margin(10, 0, 5, 0)
+    ),
+    plot.subtitle = element_text(hjust = .5, 
+                                 margin = margin(0, 0, 15, 0)),
+    plot.caption = element_text(color = "gray50", 
+                                size = 8, 
+                                margin = margin(15, 0, 0, 0)),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.background = element_rect(fill = "gray95")
+  )
+```
+
+```{r}
+ggsave(filename = here("Plots","Plot6.png"))
 ```
