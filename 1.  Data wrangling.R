@@ -164,3 +164,6 @@ regions %<>%
 
 ## Save dataset
 write_csv(regions, "regions_poverty.csv")
+
+## Save dataset
+write_csv(countries, "countries_poverty.csv")

@@ -3,16 +3,22 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, magrittr)
 ```
 
+```{r}
+rm(list = ls())
+```
+
 # Relation between extreme poverty rate and capital, labor and technology contributions to the economic growth by continents
 
 ## (a) Importing data frames
 
 ```{r}
-poverty <- read_csv("https://raw.githubusercontent.com/gafnts/global-growth-accounting/main/regions_poverty.csv")
-growth <- read_csv("https://raw.githubusercontent.com/gafnts/global-growth-accounting/main/regions_growth.csv")
+growth <- read_csv("countries_growth.csv")
+poverty <- read_csv("countries_poverty.csv")
+
+data <- growth %>% left_join(poverty)
 ```
 
-## (b) Solow decomposition function
+## (b) Solow decomposition
 
 ```{r}
 solow <- function(data, y, l, k, labsh) {
@@ -35,27 +41,15 @@ solow <- function(data, y, l, k, labsh) {
   ) %>%
   na.omit()
 }
-```
 
-## (c) Transformations
-
-```{r}
-# Solow decomposition by region
-regions_solow <- 
-  growth %>%
-  group_by(region) %>%
-  filter(year %in% c(1984:2019)) %>%
+data_solow <- 
+  data %>%
+  group_by(country) %>%
   solow(y = y,
         l = l,
         k = k,
-        labsh = labsh) %>%
-  select(region, year, k_cont, l_cont, tfp_cont)
-
-# Join dataframes
-data <- 
-  regions_solow %>% 
-  left_join(poverty) %>% 
-  select(region:tfp_cont, pov) %>% 
+        labsh = labsh) %>% 
+  select(country:year, dy, k_cont, l_cont, tfp_cont, pov) %>% 
   ungroup()
 ```
 
@@ -72,57 +66,60 @@ lines <- function(data, x, y, color) {
   ggplotly(p)
 }
 
-poverty %>% lines(year, pov, region)
+data_solow %>% 
+  group_by(country) %>% 
+  lines(year, pov, country)
 ```
 
-## (d) Pooled OLS
+## (e) Panel data
 
 ```{r}
 pacman::p_load(panelr, plm, broom, stargazer)
+```
 
+```{r}
+# Subset
+data85 <- data_solow %>% filter(year == 1985)
+data19 <- data_solow %>% filter(year == 2019)
+```
+
+```{r}
+library(lmtest)
+library(patchwork)
+
+# Simple regression models
+m1 <- data85 %>% lm(pov ~ k_cont + l_cont + tfp_cont, data = . ) 
+m1 %>% summary()
+
+m2 <- data19 %>% lm(pov ~ k_cont + l_cont + tfp_cont, data = . )
+m2 %>% summary()
+
+# Plots
+plot <- function(data, x, y) {
+    data %>% 
+    ggplot(aes({{x}}, {{y}})) +
+    geom_point() +
+    geom_smooth(method = "lm", formula = y ~ x)
+}
+
+p1 <- plot(m1, tfp_cont, pov)
+p2 <- plot(m2, tfp_cont, pov)
+p1 + p2
+```
+
+### «Before and after» comparisons
+
+```{r}
+
+
+# Compute the differences
+diff_d
+```
+
+```{r}
 # Declare data frame as panel data
-panel  <-  panel_data(data, id = region, wave = year)
-```
+panel  <-  panel_data(data_solow, id = country, wave = year)
 
-```{r}
-library(GGally)
-ggpairs(panel)
-```
-
-```{r}
-# Model 1: Pooled OLS
-pooled <- plm(pov ~ k_cont + l_cont + tfp_cont, 
-             data = panel,
-             model = "pooling")
-
-# Tidy summary
-pooled %>% summary()
-
-# Table
-stargazer(pooled, type = "text")
-```
-
-```{r}
-# Model 2: Fixed OLS
-fixed <- plm(pov ~ k_cont + l_cont + tfp_cont, 
-             data = panel,
-             model = "fd")
-
-# Model 3: Random OLS
-random <- plm(pov ~ k_cont + l_cont + tfp_cont, 
-             data = panel,
-             model = "random")
-
-# Summary
-stargazer(random, type = "text")
-
-# Fixed or random?
-phtest(fixed, random)
-```
-
-Por hacer: Generar pruebas estadísticas, supervisar países por región en ambas bases de datos, redactar metodología, generar una gráfica para pobreza.
-
-```{r}
 data %>% 
   filter(region == "Europa") %>% 
   lm(pov ~ k_cont + l_cont + tfp_cont, data = .) %>% 
