@@ -1,0 +1,10 @@
+---
+title: "Contribución de los factores productivos al crecimiento económico y su relación con la extrema pobreza: Evidencia para 91 economías con datos de panel para el periodo de 1985 a 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Metodología
