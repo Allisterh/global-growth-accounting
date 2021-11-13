@@ -121,30 +121,69 @@ diff_l <- data19$l_cont - data85$l_cont
 diff_tfp <- data19$tfp_cont - data85$tfp_cont
 
 # Regression with differenced data
-mod3 <- lm(diff_pov ~ diff_k + diff_l + diff_tfp)
-mod3 %>% summary()
+m3 <- lm(diff_pov ~ diff_k + diff_l + diff_tfp)
 
 # Plot
 x <- c("diff_k","diff_l","diff_tfp")
-plotlist(mod3, x, diff_pov) %>% grid.arrange(grobs = .)
+plotlist(m3, x, diff_pov) %>% grid.arrange(grobs = .)
+
+# Summary
+m3 %>% summary()
 ```
 
 ### Fixed effects regression
 
 ```{r}
-pacman::p_load(panelr, plm, broom, stargazer)
+pacman::p_load(panelr, plm, broom)
 
 # Declare data frame as panel data
 panel  <-  panel_data(data_solow, id = country, wave = year)
 ```
 
 ```{r}
+# Fixed effects
+m4 <- plm(pov ~ k_cont + l_cont + tfp_cont,
+          data = panel,
+          index = c("country", "year"),
+          model = "within")
 
+m4 %>% summary()
+```
+
+### Time fixed effects
+
+```{r}
+# Fixed effects
+m5 <- plm(pov ~ k_cont + l_cont + tfp_cont,
+          data = panel,
+          index = c("country", "year"),
+          model = "within",
+          effect = "twoways")
+
+# Summary
+m5 %>% summary()
+
+# Clustered standard errors 
+# (Adjustment for autocorrelation + heteroskedasticity)
+coeftest(m5, vcov = vcovHC, type = "HC1")
 ```
 
 ```{r}
-data %>% 
-  filter(region == "Europa") %>% 
-  lm(pov ~ k_cont + l_cont + tfp_cont, data = .) %>% 
-  summary()
+library(stargazer)
+
+# Gather clustered standard errors in a list
+rob_se <- list(sqrt(diag(vcovHC(m1, type = "HC1"))),
+               sqrt(diag(vcovHC(m2, type = "HC1"))),
+               sqrt(diag(vcovHC(m3, type = "HC1"))),
+               sqrt(diag(vcovHC(m4, type = "HC1"))),
+               sqrt(diag(vcovHC(m5, type = "HC1"))))
+
+stargazer(m1, m2, m3, m4, m5, 
+          digits = 3,
+          header = FALSE,
+          type = "text", 
+          se = rob_se,
+          title = "Test",
+          model.numbers = FALSE,
+          column.labels = c("(1)", "(2)", "(3)", "(4)", "(5)"))
 ```
