@@ -8,3 +8,5 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Metodología
+
+Como se ha comentado anteriormente,

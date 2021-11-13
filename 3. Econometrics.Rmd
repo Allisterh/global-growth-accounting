@@ -3,7 +3,7 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, magrittr)
 ```
 
-# Relation between extreme poverty rate and capital, labor and technology contributions to the economic growth by continents
+# Contribución de los factores productivos al crecimiento económico y su relación con la extrema pobreza: Evidencia para 91 economías con datos de panel para el periodo de 1985 a 2019
 
 ## (a) Importing data frames
 
