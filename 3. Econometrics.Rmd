@@ -71,11 +71,9 @@ data_solow %>%
   lines(year, pov, country)
 ```
 
-## (e) Panel data
+## (e) Econometrics
 
-```{r}
-pacman::p_load(panelr, plm, broom, stargazer)
-```
+### Simple regression models
 
 ```{r}
 # Subset
@@ -85,41 +83,66 @@ data19 <- data_solow %>% filter(year == 2019)
 
 ```{r}
 library(lmtest)
-library(patchwork)
+library(gridExtra)
 
 # Simple regression models
 m1 <- data85 %>% lm(pov ~ k_cont + l_cont + tfp_cont, data = . ) 
-m1 %>% summary()
-
 m2 <- data19 %>% lm(pov ~ k_cont + l_cont + tfp_cont, data = . )
-m2 %>% summary()
 
 # Plots
-plot <- function(data, x, y) {
-    data %>% 
-    ggplot(aes({{x}}, {{y}})) +
+plotlist <- function(data, x, y) {
+  require(ggplot2)
+  require(purrr)
+  y <- enquo(y)
+
+  map(x, function(x)
+    ggplot(data, aes(!!sym(x), !!y)) +
     geom_point() +
     geom_smooth(method = "lm", formula = y ~ x)
+  )
 }
 
-p1 <- plot(m1, tfp_cont, pov)
-p2 <- plot(m2, tfp_cont, pov)
-p1 + p2
+x <- c("k_cont","l_cont","tfp_cont")
+plotlist(m1, x, pov) %>% grid.arrange(grobs = .)
+plotlist(m2, x, pov) %>% grid.arrange(grobs = .)
+
+# Summary
+m1 %>% summary()
+m2 %>% summary()
 ```
 
 ### «Before and after» comparisons
 
 ```{r}
-
-
 # Compute the differences
-diff_d
+diff_pov <- data19$pov - data85$pov
+diff_k <- data19$k_cont - data85$k_cont
+diff_l <- data19$l_cont - data85$l_cont
+diff_tfp <- data19$tfp_cont - data85$tfp_cont
+
+# Regression with differenced data
+mod3 <- lm(diff_pov ~ diff_k + diff_l + diff_tfp)
+mod3 %>% summary()
+
+# Plot
+x <- c("diff_k","diff_l","diff_tfp")
+plotlist(mod3, x, diff_pov) %>% grid.arrange(grobs = .)
+```
+
+### Fixed effects regression
+
+```{r}
+pacman::p_load(panelr, plm, broom, stargazer)
+
+# Declare data frame as panel data
+panel  <-  panel_data(data_solow, id = country, wave = year)
 ```
 
 ```{r}
-# Declare data frame as panel data
-panel  <-  panel_data(data_solow, id = country, wave = year)
 
+```
+
+```{r}
 data %>% 
   filter(region == "Europa") %>% 
   lm(pov ~ k_cont + l_cont + tfp_cont, data = .) %>% 
