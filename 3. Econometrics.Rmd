@@ -10,7 +10,6 @@ pacman::p_load(tidyverse, magrittr)
 ```{r}
 growth <- read_csv("countries_growth.csv")
 poverty <- read_csv("countries_poverty.csv")
-
 data <- growth %>% left_join(poverty)
 ```
 
@@ -149,7 +148,7 @@ m4 %>% summary()
 ### Time fixed effects
 
 ```{r}
-# Fixed effects
+# Time fixed effects
 m5 <- plm(pov ~ k_cont + l_cont + tfp_cont,
           data = panel,
           index = c("country", "year"),
@@ -158,16 +157,13 @@ m5 <- plm(pov ~ k_cont + l_cont + tfp_cont,
 
 # Summary
 m5 %>% summary()
-
-# Clustered standard errors 
-# (Adjustment for autocorrelation + heteroskedasticity)
-coeftest(m5, vcov = vcovHC, type = "HC1")
 ```
 
 ```{r}
 library(stargazer)
 
 # Gather clustered standard errors in a list
+# (Adjustment for autocorrelation + heteroskedasticity)
 rob_se <- list(sqrt(diag(vcovHC(m1, type = "HC1"))),
                sqrt(diag(vcovHC(m2, type = "HC1"))),
                sqrt(diag(vcovHC(m3, type = "HC1"))),
@@ -182,4 +178,17 @@ stargazer(m1, m2, m3, m4, m5,
           title = "Test",
           model.numbers = FALSE,
           column.labels = c("(1)", "(2)", "(3)", "(4)", "(5)"))
+```
+
+```{r}
+# Export stargazer
+stargazer(m1, m2, m3, m4, m5, 
+          digits = 3,
+          header = FALSE,
+          type = "html", 
+          se = rob_se,
+          title = "Test",
+          model.numbers = FALSE,
+          column.labels = c("(1)", "(2)", "(3)", "(4)", "(5)"),
+          out = "Resultados.htm")
 ```
