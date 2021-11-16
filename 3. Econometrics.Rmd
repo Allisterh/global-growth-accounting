@@ -3,7 +3,7 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, magrittr)
 ```
 
-# Contribución de los factores productivos al crecimiento económico y su relación con la extrema pobreza: Evidencia para 91 economías con datos de panel para el periodo de 1985 a 2019
+# Contribución de los factores productivos al crecimiento económico y su relación con la pobreza extrema: Evidencia para 91 economías con datos de panel para el periodo de 1985 a 2019
 
 ## (a) Importing data frames
 
@@ -71,18 +71,12 @@ data_solow %>%
 ### Simple regression models
 
 ```{r}
-# Subset
-data85 <- data_solow %>% filter(year == 1985)
-data19 <- data_solow %>% filter(year == 2019)
-```
-
-```{r}
 library(lmtest)
 library(gridExtra)
 
 # Simple regression models
-m1 <- data85 %>% lm(pov ~ k_cont + l_cont + tfp_cont, data = . ) 
-m2 <- data19 %>% lm(pov ~ k_cont + l_cont + tfp_cont, data = . )
+m1 <- data_solow %>% lm(pov ~ dy, data = . ) 
+m2 <- data_solow %>% lm(pov ~ k_cont + l_cont + tfp_cont, data = . )
 
 # Plots
 plotlist <- function(data, x, y) {
@@ -109,6 +103,10 @@ m2 %>% summary()
 ### «Before and after» comparisons
 
 ```{r}
+# Subset
+data85 <- data_solow %>% filter(year == 1985)
+data19 <- data_solow %>% filter(year == 2019)
+
 # Compute the differences
 diff_pov <- data19$pov - data85$pov
 diff_k <- data19$k_cont - data85$k_cont
@@ -137,7 +135,12 @@ panel  <-  panel_data(data_solow, id = country, wave = year)
 
 ```{r}
 # Fixed effects
-m4 <- plm(pov ~ k_cont + l_cont + tfp_cont,
+m4 <- plm(pov ~ dy,
+          data = panel,
+          index = c("country", "year"),
+          model = "within")
+
+m5 <- plm(pov ~ k_cont + l_cont + tfp_cont,
           data = panel,
           index = c("country", "year"),
           model = "within")
@@ -149,7 +152,13 @@ m4 %>% summary()
 
 ```{r}
 # Time fixed effects
-m5 <- plm(pov ~ k_cont + l_cont + tfp_cont,
+m6 <- plm(pov ~ dy,
+          data = panel,
+          index = c("country", "year"),
+          model = "within",
+          effect = "twoways")
+
+m7 <- plm(pov ~ k_cont + l_cont + tfp_cont,
           data = panel,
           index = c("country", "year"),
           model = "within",
@@ -168,27 +177,29 @@ rob_se <- list(sqrt(diag(vcovHC(m1, type = "HC1"))),
                sqrt(diag(vcovHC(m2, type = "HC1"))),
                sqrt(diag(vcovHC(m3, type = "HC1"))),
                sqrt(diag(vcovHC(m4, type = "HC1"))),
-               sqrt(diag(vcovHC(m5, type = "HC1"))))
+               sqrt(diag(vcovHC(m5, type = "HC1"))),
+               sqrt(diag(vcovHC(m6, type = "HC1"))),
+               sqrt(diag(vcovHC(m7, type = "HC1"))))
 
-stargazer(m1, m2, m3, m4, m5, 
+stargazer(m1, m2, m3, m4, m5, m6, m7,
           digits = 3,
           header = FALSE,
           type = "text", 
           se = rob_se,
           title = "Test",
           model.numbers = FALSE,
-          column.labels = c("(1)", "(2)", "(3)", "(4)", "(5)"))
+          column.labels = c("(1)", "(2)", "(3)", "(4)", "(5)", "(6)", "(7)"))
 ```
 
 ```{r}
 # Export stargazer
-stargazer(m1, m2, m3, m4, m5, 
+stargazer(m1, m2, m3, m4, m5, m6, m7,
           digits = 3,
           header = FALSE,
           type = "html", 
           se = rob_se,
           title = "Test",
           model.numbers = FALSE,
-          column.labels = c("(1)", "(2)", "(3)", "(4)", "(5)"),
+          column.labels = c("(1)", "(2)", "(3)", "(4)", "(5)", "(6)", "(7)"),
           out = "Resultados.htm")
 ```

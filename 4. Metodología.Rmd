@@ -1,6 +1,85 @@
+---
+---
+---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-pacman::p_load(tidyverse, magrittr)
 ```
 
 ## Metodología
+
+Posterior a la descomposición del crecimiento económico de 91 economías en las tasas de crecimiento de sus factores productivos según la metodología propuesta por Solow (1957), se utilizarán datos del porcentaje de personas viviendo en condiciones de extrema pobreza (definida como el porcentaje de la población que vive con menos de \$1.90 por día, ajustado por paridad del poder adquisitivo) con el propósito de estimar una serie de regresiones lineales por mínimos cuadrados y mínimos cuadrados con estimadores de efectos fijos, para comprender cómo las contribuciones de los factores productivos en el crecimiento se han relacionado con las tasas de extrema pobreza durante el periodo de análisis.
+
+Considerando el modelo de regresión poblacional:
+
+$$
+pov_{it} = \beta_{0} + \beta_{1} k_{it} + \beta_{2} l_{it} + \beta_{3} ptf_{it} + \epsilon_{it}
+$$
+
+Donde:
+
+pov = Tasa de población viviendo en condiciones de pobreza (en la economía i, durante el año t)
+
+k = Contribución del factor capital al crecimiento económico
+
+l = Contribución del factor trabajo al crecimiento económico
+
+ptf = Tasa de crecimiento de la productividad total de los factores
+
+epsilon = Variable de perturbación estocástica que se distribuye con media cero y varianza constante
+
+Serán estimadas dos regresiones lineales simples para el año inicial y final de la serie:
+
+$$
+pov_{1985} = \beta_{0} + \beta_{1} k_{1985} + \beta_{2} l_{1985} + \beta_{3} ptf_{1985} +\epsilon_{i} 
+$$
+
+$$
+pov_{2019} = \beta_{0} + \beta_{1} k_{2019} + \beta_{2} l_{2019} + \beta_{3} ptf_{2019} +\epsilon_{i} 
+$$
+
+Los resultados de la regresión (1) y (2) se presentan en la Tabla 1. Para la regresión (1), en la que se consideran únicamente datos de 1985, puede observarse que la contribución del capital se relaciona de forma inversa con la tasa de población viviendo en extrema pobreza, mientras que la contribución del factor trabajo se relaciona positivamente y, contrario a nuestras expectativas, la productividad total de los factores también se relaciona de forma positiva con la variable dependiente.
+
+No obstante, en la regresión (2), que contempla datos de 2019, es el capital la variable que se relaciona de forma positiva con la variable endógena, mientras que la productividad total de los factores ahora se relaciona inversamente. En ambas regresiones el coeficiente de la contribución del factor trabajo es extremadamente alto, sugiriendo que, en promedio, un aumento del 1% en dicho factor aumentó 8.9 y 11.4 veces el porcentaje de personas viviendo en condiciones de extrema pobreza.
+
+Las incongruencias en estos resultados se originan en el hecho de que tanto las regresiones (1) como (2) no consideran factores inobservables que cambian de entidad en entidad dentro de la muestra, pero que pueden considerarse como invariantes en el tiempo. Por lo tanto, la especificación del modelo de regresión poblacional puede expandirse para incluir una variable Zi, que considere las características específicas que diferencian a cada una de las entidades pero que son constantes conforme el tiempo pasa.
+
+$$
+pov_{it} = \beta_{0} + \beta_{1} k_{it} + \beta_{2} l_{it} + \beta_{3} ptf_{it} + \beta_{4} Z_{i} + \epsilon_{it}
+$$
+
+Esta variable puede eliminarse al estimar una regresión en la que las variables se computan como diferencias entre al año inicial y el año final de la serie para cada una de las tres variables independientes y para la variable dependiente, de tal forma que el modelo quede expresado como:
+
+$$
+pov_{i2019} - pov_{i1985} = \beta_{1} (k_{i2019} - k_{i1985}) +  … + \epsilon_{i2019} - \epsilon_{i1985} 
+$$
+
+La regresión, identificada en la Tabla 1 con el número (3), genera estimadores robustos a cualquier sesgo que pueda ocasionar la omisión de la variable Zi (Hanck et al., 2020). Para el caso de esta regresión, las contribuciones del factor capital (la única variable estadísticamente significativa dentro del modelo) y de la productividad total de los factores se relacionan de forma inversa con las tasas de población viviendo en condiciones de extrema pobreza, mientras que el crecimiento del factor trabajo se relaciona de forma positiva y sigue teniendo un coeficiente considerablemente alto.
+
+Tal y como observan Hanck et al. (2020), este tipo de regresión descarta información de los años que se encuentran entre el inicio y el final de la serie de tiempo, por lo que omite factores que influyen en las tasas de pobreza, que están correlacionadas con las variables independientes y que varían conforme el tiempo pasa.
+
+Para controlar por estos factores, se estima una regresión panel de efectos fijos, que puede ser representada como:
+
+$$
+Y_{it} = \beta_{0} + \beta_{1} X_{1,it} + … + \beta_{k} X_{k,it} + \gamma_{2} D2_{i} + … + \gamma_{n} Dn_{i} + \epsilon_{it}
+$$
+
+En la que D2i, D3i, ..., Dni son variables dicotómicas que representan a cada una de las entidades dentro del modelo. El hecho de que el modelo considere interceptos específicos para cada entidad le permite capturar heterogeneidades entre las diferentes economías incluidas en el análisis.
+
+Además, se considera una regresión de efectos fijos de entidad y efectos fijos de tiempo:
+
+$$
+Y_{it} = \beta_{0} + \beta_{1} X_{1,it} + … + \beta_{k} X_{k,it} + \gamma_{2} D2_{i} + … + \gamma_{n} DT_{i} + \delta_{2} B2_{t} + … + \delta_{T} BT_{t} + \epsilon_{it}
+$$
+
+La cual permite eliminar el sesgo de los factores inobservables que varían con el tiempo pero que son constantes entre las entidades, además de controlar por factores que son disímiles entre entidades pero que son constantes en el tiempo (Hanck et al., 2020). Ambos se presentan como los modelos (4) y (5) en la Tabla 1.
+
+Tanto la regresión (4) como la (5) estiman con mayor precisión a los parámetros de cada variable y en el caso de la primera, los parámetros de la contribución del capital y el trabajo son estadísticamente diferentes a cero un nivel de significancia del 5%. 
+
+En ambas regresiones puede observarse que, en promedio, un aumento del 1% en la contribución del capital al crecimiento económico reduce en un 1.6% y un 1%, respectivamente, la tasa de personas viviendo en condiciones de extrema pobreza. 
+
+Mientras tanto, la tasa de crecimiento del factor trabajo se relaciona positivamente con el porcentaje de personas en extrema pobreza, sugiriendo que reducir la pobreza es más difícil cuando el crecimiento de la economía está impulsado principalmente por el crecimiento del factor trabajo y no por, por ejemplo, la inversión en capital.
+
+Aunque la productividad total de los factores se relaciona de forma inversa con la variable que mide el porcentaje de la población en extrema pobreza, su efecto en esta última es bajo y no significativo.
+
+Durante las cinco regresiones han sido utilizados errores estándar robustos (HAC) en caso de que existieran problemas de autocorrelación y heterocedasticidad durante el proceso de estimación.
